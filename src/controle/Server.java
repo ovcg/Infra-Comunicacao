@@ -46,7 +46,7 @@ public class Server implements Runnable {
 		FileOutputStream fileOutput = null;
 
 		byte prosseguir = 1;// sinal para continuar a receber os dados
-		byte[] buffer = new byte[5000];// tam do pacote
+		byte[] buffer = new byte[5003];// tam do pacote
 
 		int bytesLidos = 0;// bytes lidos
 		long tamArq = 0;// recebe tam do arquivo
@@ -75,8 +75,8 @@ public class Server implements Runnable {
 			// Nome do arquivo
 			byte[] nomeArq = new byte[150];
 			input.read(nomeArq);
-			copia(nomeArq);			
-			String nome = new String(nomeArq, StandardCharsets.UTF_16);
+						
+			String nome = new String(pegarCorpo(nomeArq), StandardCharsets.UTF_16);
 
 			nome = formataString(nome);
 			System.out.println("Recebendo arquivo: " + nome);
@@ -89,21 +89,21 @@ public class Server implements Runnable {
 			input.read(ipRecebido);
 			
 			
-			byte[] IpRecebidoAux = copia(ipRecebido);
+			byte[] IpRecebidoAux = pegarCorpo((ipRecebido));
 			String ipRec = new String(IpRecebidoAux, StandardCharsets.UTF_16);
 			ipRec = formataString(ipRec);
 			lblIp.setText("IP fonte: " + ipRec);
 			output.write(prosseguir);
 
 			// Recebendo tamanho do arquivo
-			byte[] aux = new byte[Long.BYTES];
+			byte[] aux = new byte[150];
 			input.read(aux);
 			//ByteBuffer bufferTam = ByteBuffer.wrap(aux);
 			//tamArq = bufferTam.getLong();
-			byte[] tamRecAux = copia(aux);
-			String tamanhoArquivoString = new String(copia(aux), StandardCharsets.UTF_16);
+			byte[] tamRecAux = pegarCorpo((aux));
+			String tamanhoArquivoString = new String(tamRecAux, StandardCharsets.UTF_16);
 			
-			tamArq = Long.parseLong(tamanhoArquivoString);			
+			tamArq = Long.parseLong(formataString(tamanhoArquivoString));			
 			output.write(prosseguir);
 
 			System.out.println("Recebendo tamanho do arquivo: " + tamArq / 1000000 + " MB");
@@ -113,8 +113,9 @@ public class Server implements Runnable {
 			data = new DataInputStream(input);
 
 			while ((bytesLidos = data.read(buffer)) > 0) {// Recebendo o arquivo
-
-				fileOutput.write(copia(buffer), 0, bytesLidos);
+				
+				byte[] pacoteCorpo = pegarCorpo(buffer);
+				fileOutput.write(buffer,0,bytesLidos);
 				fileOutput.flush();
 				arqRecebido += bytesLidos;
 				// Atualizando ProgessBar
@@ -134,9 +135,9 @@ public class Server implements Runnable {
 					atualizaTempo = System.currentTimeMillis();
 				}
 			}
-			if (arqRecebido != tamArq) {
-				Files.delete(arquivo.toPath());
-			}
+			//if (arqRecebido != tamArq) {
+			///	Files.delete(arquivo.toPath());
+			//}
 
 			tempoEstimado.setText("" + 0);
 			rtt.setAux(1);
@@ -153,9 +154,23 @@ public class Server implements Runnable {
 
 	}
 	
+
+	public byte[] pegarCorpo(byte[]a)
+	{
+		byte [] b = new byte[a.length -3];
+		int j = 0;
+		for(int i = 3 ; i < a.length; i++)
+		{
+			
+			b[j] = a[i];
+			j++;
+		}
+		return b;
+	}
+	
 	public byte[] copia(byte[]a) {
 		byte[]b=new byte[a.length-3];
-		System.arraycopy(a,3,b,0,a.length);
+		System.arraycopy(a,3,b,0,a.length-4);
 		return b;
 	}
 
