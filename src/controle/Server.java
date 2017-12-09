@@ -87,8 +87,10 @@ public class Server implements Runnable {
 
 			byte[] ipRecebido = new byte[150];
 			input.read(ipRecebido);
-
-			String ipRec = new String(ipRecebido, StandardCharsets.UTF_16);
+			
+			
+			byte[] IpRecebidoAux = copia(ipRecebido);
+			String ipRec = new String(IpRecebidoAux, StandardCharsets.UTF_16);
 			ipRec = formataString(ipRec);
 			lblIp.setText("IP fonte: " + ipRec);
 			output.write(prosseguir);
@@ -96,8 +98,12 @@ public class Server implements Runnable {
 			// Recebendo tamanho do arquivo
 			byte[] aux = new byte[Long.BYTES];
 			input.read(aux);
-			ByteBuffer bufferTam = ByteBuffer.wrap(aux);
-			tamArq = bufferTam.getLong();
+			//ByteBuffer bufferTam = ByteBuffer.wrap(aux);
+			//tamArq = bufferTam.getLong();
+			byte[] tamRecAux = copia(aux);
+			String tamanhoArquivoString = new String(copia(aux), StandardCharsets.UTF_16);
+			
+			tamArq = Long.parseLong(tamanhoArquivoString);			
 			output.write(prosseguir);
 
 			System.out.println("Recebendo tamanho do arquivo: " + tamArq / 1000000 + " MB");
@@ -108,13 +114,10 @@ public class Server implements Runnable {
 
 			while ((bytesLidos = data.read(buffer)) > 0) {// Recebendo o arquivo
 
-				fileOutput.write(buffer, 0, bytesLidos);
+				fileOutput.write(copia(buffer), 0, bytesLidos);
 				fileOutput.flush();
-
 				arqRecebido += bytesLidos;
-
 				// Atualizando ProgessBar
-
 				progressBar.setValue((int) ((arqRecebido * 100) / tamArq));
 				progressBar.setString(Long.toString((arqRecebido * 100) / tamArq) + " %");
 				progressBar.setStringPainted(true);
@@ -150,10 +153,10 @@ public class Server implements Runnable {
 
 	}
 	
-	public void copia(byte[]a) {
+	public byte[] copia(byte[]a) {
 		byte[]b=new byte[a.length-3];
 		System.arraycopy(a,3,b,0,a.length);
-		a=b;
+		return b;
 	}
 
 	public String formataString(String in) {
