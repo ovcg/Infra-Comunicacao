@@ -48,7 +48,7 @@ public class Main extends JFrame {
 	private Server server;
 	private Cliente cliente;
 	private int enviar = 0;
-
+	public boolean parado = false;
 	private Thread t;
 
 	/**
@@ -85,6 +85,7 @@ public class Main extends JFrame {
 		textFieldIp.setColumns(10);
 		textFieldIp.setBounds(88, 15, 117, 19);
 		contentPane.add(textFieldIp);
+		textFieldIp.setText("172.20.4.98");
 
 		progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
@@ -136,6 +137,7 @@ public class Main extends JFrame {
 		textFieldPort.setColumns(10);
 		textFieldPort.setBounds(310, 15, 75, 19);
 		contentPane.add(textFieldPort);
+		textFieldPort.setText("3000");
 
 		lblNomeDoArquivo = new JLabel("Nome do arquivo: ");
 		lblNomeDoArquivo.setBounds(226, 66, 348, 15);
@@ -225,44 +227,54 @@ public class Main extends JFrame {
 					t.start();
 				} else if(cliente.getReiniciar()==1) {
 					enviar = 1;
-					cliente.pararEnvio(0);
+					//cliente.pararEnvio(0);
 				}
 
 			}
 		});
 		btnIniciar.setBounds(48, 357, 117, 25);
 		contentPane.add(btnIniciar);
-
-		buttonParar = new JButton("Parar");// botÃ£o para parar
+		
+		buttonParar = new JButton("Parar");// botão para parar
 		buttonParar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				cliente.pararEnvio(1);
-				cliente.iniciar(0);
-				JOptionPane.showMessageDialog(null, "TransferÃªncia parada!");
+				
+				if(parado)
+				{
+					cliente.resume();
+					parado = false;
+				}
+				else
+				{	
+					parado = true;
+					cliente.pausar();
+				}
+				
+				//JOptionPane.showMessageDialog(null, "Transferência parada!");
 			}
 		});
 		buttonParar.setBounds(202, 357, 117, 25);
 		contentPane.add(buttonParar);
 
-		buttonReiniciar = new JButton("Reiniciar");// botÃ£o para recomecar transferencia
+		buttonReiniciar = new JButton("Reiniciar");// botão para recomecar transferencia
 		buttonReiniciar.setBounds(497, 357, 117, 25);
 		contentPane.add(buttonReiniciar);
 
 		buttonReiniciar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				cliente.reiniciar(1);
-				JOptionPane.showMessageDialog(null, "TransferÃªncia reiniciada!");
+				JOptionPane.showMessageDialog(null, "Transferência reiniciada!");
 				
 				t.destroy();
 			}
 		});
 
-		buttonCancelar = new JButton("Cancelar");// botÃ£o para cancelar
+		buttonCancelar = new JButton("Cancelar");// botão para cancelar
 		buttonCancelar.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
 				if (enviar == 1) {
-					cliente.cancelarEnvio(1);
+					//cliente.cancelarEnvio(1);
 					cliente.iniciar(0);
 					enviar = 0;
 					JOptionPane.showMessageDialog(null, "Transfer cancelada!");
