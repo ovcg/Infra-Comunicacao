@@ -8,9 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.text.DecimalFormat;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
@@ -28,13 +26,16 @@ public class Server implements Runnable {
 	private int cancelar = 0;
 	private int reiniciar = 0;
 	private JLabel lblIp;
+	private JLabel nomeArqGui;
+	byte[] cab=new byte[3];
 
-	public Server(int porta, JProgressBar progressBar, JTextPane rttRec, JTextField tempoEstimado, JLabel lblIp) {
+	public Server(int porta, JProgressBar progressBar, JTextPane rttRec, JTextField tempoEstimado, JLabel lblIp,JLabel nomeArqGui) {
 		this.porta = porta;
 		this.progressBar = progressBar;
 		this.rttRec = rttRec;
 		this.tempoEstimado = tempoEstimado;
 		this.lblIp = lblIp;
+		this.nomeArqGui=nomeArqGui;
 
 	}
 
@@ -80,6 +81,7 @@ public class Server implements Runnable {
 
 			nome = formataString(nome);
 			System.out.println("Recebendo arquivo: " + nome);
+			nomeArqGui.setText("Nome do arquivo: "+ nome);
 			output.write(prosseguir);
 
 			tempoInicial = System.currentTimeMillis();
@@ -115,7 +117,7 @@ public class Server implements Runnable {
 			while ((bytesLidos = data.read(buffer)) > 0) {// Recebendo o arquivo
 				
 				byte[] pacoteCorpo = pegarCorpo(buffer);
-				fileOutput.write(buffer,0,bytesLidos);
+				fileOutput.write(pacoteCorpo,0,bytesLidos);
 				fileOutput.flush();
 				arqRecebido += bytesLidos;
 				// Atualizando ProgessBar
@@ -135,10 +137,7 @@ public class Server implements Runnable {
 					atualizaTempo = System.currentTimeMillis();
 				}
 			}
-			//if (arqRecebido != tamArq) {
-			///	Files.delete(arquivo.toPath());
-			//}
-
+			
 			tempoEstimado.setText("" + 0);
 			rtt.setAux(1);
 			rtt.setRTT("0");
@@ -158,10 +157,12 @@ public class Server implements Runnable {
 	public byte[] pegarCorpo(byte[]a)
 	{
 		byte [] b = new byte[a.length -3];
+		for(int k=0;k<3;k++) {
+			cab[k]=a[k];
+		}
 		int j = 0;
 		for(int i = 3 ; i < a.length; i++)
-		{
-			
+		{			
 			b[j] = a[i];
 			j++;
 		}

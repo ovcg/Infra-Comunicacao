@@ -85,7 +85,7 @@ public class Main extends JFrame {
 		textFieldIp.setColumns(10);
 		textFieldIp.setBounds(88, 15, 117, 19);
 		contentPane.add(textFieldIp);
-		textFieldIp.setText("172.20.4.98");
+		textFieldIp.setText("192.168.0.112");
 
 		progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
@@ -183,8 +183,7 @@ public class Main extends JFrame {
 		btnEscutar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				int porta = Integer.parseInt(textFieldPort.getText());
-				server = new Server(porta, progressBarRecebendo, rttRec, textFieldTempoRec, lblIp);
-
+				server = new Server(porta, progressBarRecebendo, rttRec, textFieldTempoRec, lblIp, lblNomeDoArquivo);
 				Thread serverThread = new Thread(server);
 				serverThread.start();
 
@@ -220,37 +219,26 @@ public class Main extends JFrame {
 
 				String ip = textFieldIp.getText();
 				int porta = Integer.parseInt(textFieldPort.getText());
-				if (enviar == 0) {
-					enviar = 1;
-					cliente = new Cliente(ip, porta, nomeArquivo, path, enviar, progressBar, rttEnv, textFieldTempoEnv);
-					t = new Thread(cliente);
-					t.start();
-				} else if(cliente.getReiniciar()==1) {
-					enviar = 1;
-					//cliente.pararEnvio(0);
-				}
-
+				enviar = 1;
+				cliente = new Cliente(ip, porta, nomeArquivo, path, enviar, progressBar, rttEnv, textFieldTempoEnv);
+				t = new Thread(cliente);
+				t.start();
 			}
 		});
 		btnIniciar.setBounds(48, 357, 117, 25);
 		contentPane.add(btnIniciar);
-		
+
 		buttonParar = new JButton("Parar");// botão para parar
 		buttonParar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
-				if(parado)
-				{
+
+				if (parado) {
 					cliente.resume();
 					parado = false;
-				}
-				else
-				{	
+				} else {
 					parado = true;
 					cliente.pausar();
 				}
-				
-				//JOptionPane.showMessageDialog(null, "Transferência parada!");
 			}
 		});
 		buttonParar.setBounds(202, 357, 117, 25);
@@ -263,9 +251,7 @@ public class Main extends JFrame {
 		buttonReiniciar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				cliente.reiniciar(1);
-				JOptionPane.showMessageDialog(null, "Transferência reiniciada!");
-				
-				t.destroy();
+
 			}
 		});
 
@@ -274,7 +260,7 @@ public class Main extends JFrame {
 
 			public void actionPerformed(ActionEvent arg0) {
 				if (enviar == 1) {
-					//cliente.cancelarEnvio(1);
+					// cliente.cancelarEnvio(1);
 					cliente.iniciar(0);
 					enviar = 0;
 					JOptionPane.showMessageDialog(null, "Transfer cancelada!");
