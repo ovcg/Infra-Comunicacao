@@ -115,9 +115,10 @@ public class Server implements Runnable {
 			data = new DataInputStream(input);
 
 			while ((bytesLidos = data.read(buffer)) > 0) {// Recebendo o arquivo
-				
-				byte[] pacoteCorpo = pegarCorpo(buffer);
-				fileOutput.write(pacoteCorpo,0,bytesLidos);
+				if(arqRecebido==100) {
+					break;
+				}
+				fileOutput.write(buffer,0,bytesLidos);
 				fileOutput.flush();
 				arqRecebido += bytesLidos;
 				// Atualizando ProgessBar
@@ -135,6 +136,9 @@ public class Server implements Runnable {
 					String auxDec = "" + dec.format(tempoRestante);
 					tempoEstimado.setText(auxDec);
 					atualizaTempo = System.currentTimeMillis();
+				}
+				if(arqRecebido==100) {
+					break;
 				}
 			}
 			
