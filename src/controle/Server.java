@@ -71,8 +71,8 @@ public class Server implements Runnable {
 			Thread t = new Thread(rtt);
 			t.start();
 			rtt.setAux(0);
-			
-			MsgRec msgrec=new MsgRec();
+
+			MsgRec msgrec = new MsgRec();
 			Thread tMsg = new Thread(msgrec);
 			tMsg.start();
 			msgrec.setAux(0);
@@ -119,7 +119,7 @@ public class Server implements Runnable {
 
 			while ((bytesLidos = data.read(buffer)) > 0) {// Recebendo o arquivo
 
-				if(msgrec.getFlag().equalsIgnoreCase("cancelar")) {
+				if (msgrec.getFlag().equalsIgnoreCase("cancelar")) {
 					msgrec.setAux(1);
 					tempoEstimado.setText("" + 0);
 					rtt.setAux(1);
@@ -127,33 +127,34 @@ public class Server implements Runnable {
 					progressBar.setValue(0);
 					progressBar.setString("0 %");
 					progressBar.setStringPainted(true);
-					
-				}
-				
-				fileOutput.write(buffer, 0, bytesLidos);
-				fileOutput.flush();
 
-				System.out.println(bytesLidos);
-				arqRecebido += bytesLidos;
-				// Atualizando ProgessBar
-				progressBar.setValue((int) ((arqRecebido * 100) / tamArq));
-				progressBar.setString(Long.toString((arqRecebido * 100) / tamArq) + " %");
-				progressBar.setStringPainted(true);
+				} else {
 
-				if (arqRecebido > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
+					fileOutput.write(buffer, 0, bytesLidos);
+					fileOutput.flush();
 
-					duracao = System.currentTimeMillis() - tempoInicial;
-					long div = arqRecebido / duracao;
-					vel = div * 1000;
-					tempoRestante = (tamArq - arqRecebido) / vel;
-					DecimalFormat dec = new DecimalFormat("#");
-					String auxDec = "" + dec.format(tempoRestante);
-					tempoEstimado.setText(auxDec);
-					atualizaTempo = System.currentTimeMillis();
-				}
+					System.out.println(bytesLidos);
+					arqRecebido += bytesLidos;
+					// Atualizando ProgessBar
+					progressBar.setValue((int) ((arqRecebido * 100) / tamArq));
+					progressBar.setString(Long.toString((arqRecebido * 100) / tamArq) + " %");
+					progressBar.setStringPainted(true);
 
-				if (arqRecebido == 100) {
-					break;
+					if (arqRecebido > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
+
+						duracao = System.currentTimeMillis() - tempoInicial;
+						long div = arqRecebido / duracao;
+						vel = div * 1000;
+						tempoRestante = (tamArq - arqRecebido) / vel;
+						DecimalFormat dec = new DecimalFormat("#");
+						String auxDec = "" + dec.format(tempoRestante);
+						tempoEstimado.setText(auxDec);
+						atualizaTempo = System.currentTimeMillis();
+					}
+
+					if (arqRecebido == 100) {
+						break;
+					}
 				}
 			}
 

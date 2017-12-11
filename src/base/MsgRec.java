@@ -35,7 +35,7 @@ public class MsgRec implements Runnable {
 		ServerSocket serverSocket = null;
 
 		try {
-			serverSocket = new ServerSocket(3274);
+			serverSocket = new ServerSocket(3270);
 			socket = serverSocket.accept();
 
 			outputStream = socket.getOutputStream();
