@@ -8,24 +8,25 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import javax.swing.JTextPane;
+public class MsgRec implements Runnable {
 
-public class RTTRecebendo implements Runnable {
-
-	private JTextPane showRTT;
 	private int auxThread = 0;
+	private String flag;
 
-	public RTTRecebendo(JTextPane showRTT) {
-		this.showRTT = showRTT;
+	public MsgRec() {
+		
 	}
 
 	public void setAux(int auxThread) {
 		this.auxThread = auxThread;
 	}
-
-	public void setRTT(String t) {
-		this.showRTT.setText(t);
+	public String getFlag() {
+		return this.flag;
 	}
+	public void setFlag(String flag) {
+		this.flag=flag;
+	}
+
 
 	public void run() {
 		OutputStream outputStream = null;
@@ -43,7 +44,7 @@ public class RTTRecebendo implements Runnable {
 			InputStreamReader input = new InputStreamReader(inputStream);
 			BufferedReader buffer = new BufferedReader(input);
 			long tempoRTT = 0;
-			String flag = "RTT\n";
+			flag = "RTT\n";
 			long tempoInicial;
 
 			while (true) {
@@ -60,21 +61,17 @@ public class RTTRecebendo implements Runnable {
 				outputStream.write(flag.getBytes());
 				outputStream.flush();
 
-				while (!buffer.ready() && auxThread == 0)
-					;
+				while (!buffer.ready() && auxThread == 0);
 				if (buffer.ready()) {
 					if (buffer.readLine().equals("RTT2")) {
 						tempoRTT = System.nanoTime() - tempoInicial;
 
 					}
-					else if(buffer.readLine().equals("pause")) {
-						while(auxThread==2)
-						showRTT.setText("Pause");
+					else if(buffer.readLine().equals("CAN")) {
+						setFlag("cancelar");
 					}
 				}
-				double rttms = tempoRTT / 1000000;
-
-				showRTT.setText(String.valueOf(rttms));
+							
 
 				if (auxThread == 1) {
 					break;

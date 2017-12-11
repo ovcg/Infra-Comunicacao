@@ -12,6 +12,8 @@ import java.text.DecimalFormat;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+
+import base.MsgEnv;
 import base.RTTEnviando;
 
 public class Cliente implements Runnable {
@@ -26,7 +28,7 @@ public class Cliente implements Runnable {
 	private JTextField tempoEstimado;
 	private volatile boolean pausar = false;
 	private volatile boolean cancelar = false;
-	private volatile int reiniciar;
+	private volatile boolean reiniciar = false;
 	private final Object pauseLock = new Object();
 
 	public Cliente(String ip, int porta, String nomeArq, String path, int enviar, JProgressBar progress,
@@ -70,10 +72,15 @@ public class Cliente implements Runnable {
 			double tempoRestante = 0;
 
 			RTTEnviando rtt = new RTTEnviando(ip, rttEnv);
+			MsgEnv msgenv = new MsgEnv(ip);
 
 			Thread t = new Thread(rtt);
 			t.start();
 			rtt.setAux(0);
+
+			Thread tmsg = new Thread(msgenv);
+			tmsg.start();
+			msgenv.setAux(0);
 
 			if (enviar == 1) {
 
@@ -90,9 +97,8 @@ public class Cliente implements Runnable {
 				pacoteNome = copiarArray(cabecalho, corpo);
 
 				System.out.println("Cliente enviando nome do arquivo:" + nomeArq);
-				// Enviando nome do arquivo
-				outputStream.write(pacoteNome);
-				inputStream.read();
+				outputStream.write(pacoteNome); // Enviando nome do arquivo
+				System.out.println(inputStream.read());
 
 				cabecalho[0] = 1;
 				cabecalho[1] = 0;
@@ -103,7 +109,7 @@ public class Cliente implements Runnable {
 				byte[] corpoIP = ipEnv.getBytes("UTF_16");
 				pacoteip = copiarArray(cabecalho, corpoIP);
 				outputStream.write(pacoteip);
-				inputStream.read();
+				System.out.println(inputStream.read());
 				System.out.println("Cliente enviando IP: " + ipEnv);
 
 				int mega = 1000000;
@@ -120,7 +126,7 @@ public class Cliente implements Runnable {
 				pacoteTamArq = copiarArray(cabecalho, corpoTam);
 
 				outputStream.write(pacoteTamArq);
-				inputStream.read();
+				System.out.println(inputStream.read());
 
 				tempoInicial = System.currentTimeMillis();
 				atualizaTempo = tempoInicial;
@@ -129,36 +135,32 @@ public class Cliente implements Runnable {
 				out = new DataOutputStream(outputStream);
 
 				while ((bytesLidos = fileInput.read(buffer)) > 0) {// Enviando arquivo
-
+					int bytes = bytesLidos;
 					synchronized (pauseLock) {
 
 						if (pausar) {
+							out.write(buffer, 0, bytes);
+							out.flush();
+							arqEnviado += bytes;
+							tempoEstimado.setText("" + 0);
+							enviar = 0;
+							rtt.setAux(1);
+							rtt.setRTT("Pause");
 							pauseLock.wait();
 						} else if (cancelar) {
-							cabecalho[0] = 0;
-							cabecalho[1] = 0;
-							cabecalho[2] = 0;
-							byte[] pactCancela;
-							pactCancela=copiarArray(cabecalho,buffer);
-							out.write(pactCancela, 0, bytesLidos);
-							out.flush();
+							msgenv.setAux(2);
 							tempoEstimado.setText("" + 0);
 							enviar = 0;
 							rtt.setAux(1);
 							rtt.setRTT("0");
-							
 
-						}else if(arqEnviado==100) {
+						} else if (reiniciar) {
+
+						} else if (arqEnviado == 100) {
+							System.out.println("Transfer finalizada!");
 							break;
-						}
-						else {
-							cabecalho[0] = 1;
-							cabecalho[1] = 0;
-							cabecalho[2] = 1;
-							byte[] pacoteArquivo;
-							pacoteArquivo = copiarArray(cabecalho, buffer);
+						} else {
 
-							System.out.println(pacoteArquivo.length);
 							out.write(buffer, 0, bytesLidos);
 							out.flush();
 							arqEnviado += bytesLidos;
@@ -181,7 +183,7 @@ public class Cliente implements Runnable {
 
 				}
 			}
-
+			msgenv.setAux(1);
 			tempoEstimado.setText("" + 0);
 			enviar = 0;
 			rtt.setAux(1);
@@ -208,10 +210,6 @@ public class Cliente implements Runnable {
 		return c;
 	}
 
-	public int getReiniciar() {
-		return this.reiniciar;
-	}
-
 	public int getEnviar() {
 		return this.enviar;
 	}
@@ -223,7 +221,7 @@ public class Cliente implements Runnable {
 	public void resume() {
 		synchronized (pauseLock) {
 			pausar = false;
-			pauseLock.notifyAll(); // Unblocks thread
+			pauseLock.notifyAll();
 		}
 	}
 
@@ -232,13 +230,13 @@ public class Cliente implements Runnable {
 	}
 
 	public void cancelar() {
-		// you may want to throw an IllegalStateException if !running
+
 		cancelar = true;
 	}
 
-	public void reiniciar(int reiniciar) {
+	public void reiniciar() {
 
-		this.reiniciar = reiniciar;
+		this.reiniciar = true;
 	}
 
 }

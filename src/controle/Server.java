@@ -1,7 +1,6 @@
 package controle;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,6 +14,8 @@ import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+
+import base.MsgRec;
 import base.RTTRecebendo;
 
 public class Server implements Runnable {
@@ -26,19 +27,15 @@ public class Server implements Runnable {
 	private JTextField tempoEstimado;
 	private JLabel lblIp;
 	private JLabel nomeArqGui;
-	byte[] cab=new byte[3];
-	private volatile boolean pausar = false;
-	private volatile boolean cancelar = false;
-	private volatile int reiniciar;
-	private final Object pauseLock = new Object();
 
-	public Server(int porta, JProgressBar progressBar, JTextPane rttRec, JTextField tempoEstimado, JLabel lblIp,JLabel nomeArqGui) {
+	public Server(int porta, JProgressBar progressBar, JTextPane rttRec, JTextField tempoEstimado, JLabel lblIp,
+			JLabel nomeArqGui) {
 		this.porta = porta;
 		this.progressBar = progressBar;
 		this.rttRec = rttRec;
 		this.tempoEstimado = tempoEstimado;
 		this.lblIp = lblIp;
-		this.nomeArqGui=nomeArqGui;
+		this.nomeArqGui = nomeArqGui;
 
 	}
 
@@ -74,17 +71,21 @@ public class Server implements Runnable {
 			Thread t = new Thread(rtt);
 			t.start();
 			rtt.setAux(0);
-
 			
+			MsgRec msgrec=new MsgRec();
+			Thread tMsg = new Thread(msgrec);
+			tMsg.start();
+			msgrec.setAux(0);
+
 			// Nome do arquivo
 			byte[] nomeArq = new byte[150];
 			input.read(nomeArq);
-						
+
 			String nome = new String(pegarCorpo(nomeArq), StandardCharsets.UTF_16);
 
 			nome = formataString(nome);
 			System.out.println("Recebendo arquivo: " + nome);
-			nomeArqGui.setText("Nome do arquivo: "+ nome);
+			nomeArqGui.setText("Nome do arquivo: " + nome);
 			output.write(prosseguir);
 
 			tempoInicial = System.currentTimeMillis();
@@ -92,8 +93,7 @@ public class Server implements Runnable {
 
 			byte[] ipRecebido = new byte[150];
 			input.read(ipRecebido);
-			
-			
+
 			byte[] IpRecebidoAux = pegarCorpo((ipRecebido));
 			String ipRec = new String(IpRecebidoAux, StandardCharsets.UTF_16);
 			ipRec = formataString(ipRec);
@@ -103,12 +103,12 @@ public class Server implements Runnable {
 			// Recebendo tamanho do arquivo
 			byte[] aux = new byte[400];
 			input.read(aux);
-			//ByteBuffer bufferTam = ByteBuffer.wrap(aux);
-			//tamArq = bufferTam.getLong();
+			// ByteBuffer bufferTam = ByteBuffer.wrap(aux);
+			// tamArq = bufferTam.getLong();
 			byte[] tamRecAux = pegarCorpo((aux));
 			String tamanhoArquivoString = new String(tamRecAux, StandardCharsets.UTF_16);
-			tamanhoArquivoString=formataString(tamanhoArquivoString);
-			tamArq = Long.parseLong(tamanhoArquivoString);			
+			tamanhoArquivoString = formataString(tamanhoArquivoString);
+			tamArq = Long.parseLong(tamanhoArquivoString);
 			output.write(prosseguir);
 
 			System.out.println("Recebendo tamanho do arquivo: " + tamArq / 1000000 + " MB");
@@ -116,34 +116,29 @@ public class Server implements Runnable {
 			File arquivo = new File("Recebidos" + File.separator + nome);
 			fileOutput = new FileOutputStream(arquivo);
 			data = new DataInputStream(input);
-			
+
 			while ((bytesLidos = data.read(buffer)) > 0) {// Recebendo o arquivo
-				
-				if (pausar) {
-					pauseLock.wait();
-				} else if (cancelar) {							
-					output.write(2);
-					
-					tempoEstimado.setText("" + 0);					
+
+				if(msgrec.getFlag().equalsIgnoreCase("cancelar")) {
+					msgrec.setAux(1);
+					tempoEstimado.setText("" + 0);
 					rtt.setAux(1);
 					rtt.setRTT("0");
 					progressBar.setValue(0);
-					progressBar.setString("0%");
+					progressBar.setString("0 %");
 					progressBar.setStringPainted(true);
-					break;
-
+					
 				}
-				else {
-							
-				fileOutput.write(buffer,0,bytesLidos);
-				fileOutput.flush();
 				
+				fileOutput.write(buffer, 0, bytesLidos);
+				fileOutput.flush();
+
 				System.out.println(bytesLidos);
 				arqRecebido += bytesLidos;
 				// Atualizando ProgessBar
-					progressBar.setValue((int) ((arqRecebido * 100) / tamArq));
-					progressBar.setString(Long.toString((arqRecebido * 100) / tamArq) + " %");
-					progressBar.setStringPainted(true);
+				progressBar.setValue((int) ((arqRecebido * 100) / tamArq));
+				progressBar.setString(Long.toString((arqRecebido * 100) / tamArq) + " %");
+				progressBar.setStringPainted(true);
 
 				if (arqRecebido > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
 
@@ -156,13 +151,13 @@ public class Server implements Runnable {
 					tempoEstimado.setText(auxDec);
 					atualizaTempo = System.currentTimeMillis();
 				}
-				}
-				
-				if(arqRecebido==100) {
+
+				if (arqRecebido == 100) {
 					break;
 				}
 			}
-			
+
+			msgrec.setAux(1);
 			tempoEstimado.setText("" + 0);
 			rtt.setAux(1);
 			rtt.setRTT("0");
@@ -174,43 +169,19 @@ public class Server implements Runnable {
 		} catch (IOException e) {
 
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-	public void resume() {
-		synchronized (pauseLock) {
-			pausar = false;
-			pauseLock.notifyAll(); // Unblocks thread
 		}
 	}
 
-	public void pausar() {
-		pausar = true;
-	}
-
-	public void cancelar() {
-		// you may want to throw an IllegalStateException if !running
-		cancelar = true;
-	}
-
-	public byte[] pegarCorpo(byte[]a)
-	{
-		byte [] b = new byte[a.length -3];
-		for(int k=0;k<3;k++) {
-			cab[k]=a[k];
-		}
+	public byte[] pegarCorpo(byte[] a) {
+		byte[] b = new byte[a.length - 3];
 		int j = 0;
-		for(int i = 3 ; i < a.length; i++)
-		{			
+		for (int i = 3; i < a.length; i++) {
 			b[j] = a[i];
 			j++;
 		}
 		return b;
 	}
-	
+
 	public String formataString(String in) {
 		int pos = in.indexOf(0);
 		if (pos != -1) {

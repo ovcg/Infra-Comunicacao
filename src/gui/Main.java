@@ -85,7 +85,7 @@ public class Main extends JFrame {
 		textFieldIp.setColumns(10);
 		textFieldIp.setBounds(88, 15, 117, 19);
 		contentPane.add(textFieldIp);
-		textFieldIp.setText("192.168.0.122");
+		textFieldIp.setText("192.168.0.119");
 
 		progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
@@ -233,11 +233,15 @@ public class Main extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 
 				if (parado) {
+					buttonParar.setText("Parar");
 					cliente.resume();
 					parado = false;
+					
 				} else {
+					buttonParar.setText("Resume");
 					parado = true;
 					cliente.pausar();
+										
 				}
 			}
 		});
@@ -250,7 +254,7 @@ public class Main extends JFrame {
 
 		buttonReiniciar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				cliente.reiniciar(1);
+				cliente.reiniciar();
 
 			}
 		});
@@ -259,8 +263,8 @@ public class Main extends JFrame {
 		buttonCancelar.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-				if (enviar == 1) {
-					server.cancelar();
+				if (enviar == 1) {					
+					cliente.cancelar();
 					JOptionPane.showMessageDialog(null, "Transfer cancelada!");
 				}
 				else {
