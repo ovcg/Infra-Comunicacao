@@ -98,7 +98,7 @@ public class Cliente implements Runnable {
 
 				System.out.println("Cliente enviando nome do arquivo:" + nomeArq);
 				outputStream.write(pacoteNome); // Enviando nome do arquivo
-				System.out.println(inputStream.read());
+				inputStream.read();
 
 				cabecalho[0] = 1;
 				cabecalho[1] = 0;
@@ -109,7 +109,7 @@ public class Cliente implements Runnable {
 				byte[] corpoIP = ipEnv.getBytes("UTF_16");
 				pacoteip = copiarArray(cabecalho, corpoIP);
 				outputStream.write(pacoteip);
-				System.out.println(inputStream.read());
+				inputStream.read();
 				System.out.println("Cliente enviando IP: " + ipEnv);
 
 				int mega = 1000000;
@@ -126,7 +126,7 @@ public class Cliente implements Runnable {
 				pacoteTamArq = copiarArray(cabecalho, corpoTam);
 
 				outputStream.write(pacoteTamArq);
-				System.out.println(inputStream.read());
+				inputStream.read();
 
 				tempoInicial = System.currentTimeMillis();
 				atualizaTempo = tempoInicial;
@@ -160,7 +160,8 @@ public class Cliente implements Runnable {
 							enviar = 0;
 							rtt.setAux(1);
 							rtt.setRTT("0");
-							reinicio(tamArq, progressbar, rttEnv, tempoEstimado, fileInput, out);
+							reinicio(tamArq, progressbar, rttEnv, tempoEstimado, file,outputStream);
+							break;
 
 						} else if (arqEnviado == 100) {
 							System.out.println("Transfer finalizada!");
@@ -210,8 +211,11 @@ public class Cliente implements Runnable {
 	}
 
 	public void reinicio(long tamArq,JProgressBar progressBar, JTextPane rttRec,
-			JTextField tempoEstimado, FileInputStream fileInput, DataOutputStream out) throws IOException {
-
+			JTextField tempoEstimado,File file,OutputStream outputstream) throws IOException {
+		
+		@SuppressWarnings("resource")
+		FileInputStream fileInput=new FileInputStream(file);
+		DataOutputStream out=new DataOutputStream(outputstream);
 		byte[] buffer1 = new byte[5000];
 		long arqEnviado = 0;
 		int bytesLidos1 = 0;
