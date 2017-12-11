@@ -44,7 +44,7 @@ public class MsgRec implements Runnable {
 
 			InputStreamReader input = new InputStreamReader(inputStream);
 			BufferedReader buffer = new BufferedReader(input);
-			flag = "RTT\n";
+			setFlag("RTT\n");
 			int cont = 0;
 
 			while (true) {

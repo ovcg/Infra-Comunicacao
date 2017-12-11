@@ -77,6 +77,7 @@ public class Server implements Runnable {
 			Thread tMsg = new Thread(msgrec);
 			tMsg.start();
 			msgrec.setAux(0);
+			msgrec.setFlag("RTT\n");
 
 			// Nome do arquivo
 			byte[] nomeArq = new byte[150];
