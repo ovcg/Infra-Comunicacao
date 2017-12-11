@@ -132,15 +132,15 @@ public class Server implements Runnable {
 
 				} else if (msgrec.getFlag().equalsIgnoreCase("reiniciar")) {
 
-					Files.deleteIfExists(arquivo.toPath());
+					
 					tempoEstimado.setText("" + 0);
 					rtt.setAux(1);
 					rtt.setRTT("0");
 					progressBar.setValue(0);
 					progressBar.setString("0 %");
 					progressBar.setStringPainted(true);
-					
-					reinicio(bytesLidos, progressBar, rttRec, tempoEstimado,fileOutput,data);
+					File arquivo2 = new File("Recebidos" + File.separator +"1"+ nome);
+					reinicio(bytesLidos, progressBar, rttRec, tempoEstimado,arquivo2,input);
 					break;
 
 				} else {
@@ -148,7 +148,6 @@ public class Server implements Runnable {
 					fileOutput.write(buffer, 0, bytesLidos);
 					fileOutput.flush();
 
-					System.out.println(bytesLidos);
 					arqRecebido += bytesLidos;
 					// Atualizando ProgessBar
 					progressBar.setValue((int) ((arqRecebido * 100) / tamArq));
@@ -189,7 +188,7 @@ public class Server implements Runnable {
 	}
 
 	public void reinicio(long tamArq, JProgressBar progressBar, JTextPane rttRec,
-			JTextField tempoEstimado,FileOutputStream fileOutput,DataInputStream data1) throws IOException {
+			JTextField tempoEstimado,File file,InputStream inputstream) throws IOException {
 
 		byte[] buffer1 = new byte[5000];// tam do pacote
 		int bytesLidos = 0;
@@ -199,12 +198,16 @@ public class Server implements Runnable {
 		long duracao = 0;
 		double vel = 0;
 		double tempoRestante = 0;
+		DataInputStream data1=new DataInputStream(inputstream);
+		@SuppressWarnings("resource")
+		FileOutputStream fileOutput=new FileOutputStream(file);
+		
+		
 		while ((bytesLidos = data1.read(buffer1)) > 0) {// Recebendo o arquivo
 
 			fileOutput.write(buffer1, 0, bytesLidos);
 			fileOutput.flush();
 
-			System.out.println(bytesLidos);
 			arqRecebido += bytesLidos;
 			// Atualizando ProgessBar
 			progressBar.setValue((int) ((arqRecebido * 100) / tamArq));
