@@ -66,8 +66,10 @@ public class MsgEnv implements Runnable {
 					break;
 				}
 				if(auxThread==2) {
-					flag="CAN\n";
-									
+					flag="CAN\n";									
+				}
+				if(auxThread==3) {
+					flag="REI\n";									
 				}
 				outputStream.write(flag.getBytes());
 				outputStream.flush();

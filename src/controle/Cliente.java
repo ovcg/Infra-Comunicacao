@@ -155,6 +155,12 @@ public class Cliente implements Runnable {
 							rtt.setRTT("0");
 
 						} else if (reiniciar) {
+							msgenv.setAux(3);
+							tempoEstimado.setText("" + 0);
+							enviar = 0;
+							rtt.setAux(1);
+							rtt.setRTT("0");
+							reinicio(bytesLidos, arqEnviado, progressbar, rttEnv, tempoEstimado, fileInput, out);
 
 						} else if (arqEnviado == 100) {
 							System.out.println("Transfer finalizada!");
@@ -199,6 +205,41 @@ public class Cliente implements Runnable {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+
+	}
+
+	public void reinicio(int bytesLidos, long arqEnviado, JProgressBar progressBar, JTextPane rttRec,
+			JTextField tempoEstimado, FileInputStream fileInput, DataOutputStream out) throws IOException {
+
+		byte[] buffer1 = new byte[5000];
+		int bytesLidos1 = 0;
+		long tamArq = 0;
+		long arqEnviado1 = 0;
+		long tempoInicial = 0;
+		long atualizaTempo = 0;
+		long duracao = 0;
+		double vel = 0;
+		double tempoRestante = 0;
+
+		while ((bytesLidos1 = fileInput.read(buffer1)) > 0) {// Enviando arquivo
+
+			out.write(buffer1, 0, bytesLidos1);
+			out.flush();
+			arqEnviado1 += bytesLidos1;
+
+			// Atualizando ProgessBar
+			progressbar.setValue((int) ((arqEnviado1 * 100) / tamArq));
+			progressbar.setString(Long.toString(((arqEnviado1 * 100) / tamArq)) + " %");
+			progressbar.setStringPainted(true);
+
+			if (arqEnviado1 > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
+				duracao = System.currentTimeMillis() - tempoInicial;
+				vel = 1000 * (arqEnviado1 / duracao);
+				tempoRestante = (tamArq - arqEnviado1) / vel;
+				tempoEstimado.setText(String.valueOf(new DecimalFormat("#").format(tempoRestante)));
+				atualizaTempo = System.currentTimeMillis();
+			}
 		}
 
 	}

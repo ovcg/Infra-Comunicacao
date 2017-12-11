@@ -127,6 +127,19 @@ public class Server implements Runnable {
 					progressBar.setValue(0);
 					progressBar.setString("0 %");
 					progressBar.setStringPainted(true);
+					break;
+
+				} else if (msgrec.getFlag().equalsIgnoreCase("reiniciar")) {
+
+					tempoEstimado.setText("" + 0);
+					rtt.setAux(1);
+					rtt.setRTT("0");
+					progressBar.setValue(0);
+					progressBar.setString("0 %");
+					progressBar.setStringPainted(true);
+					
+					reinicio(bytesLidos, arqRecebido, progressBar, rttRec, tempoEstimado,fileOutput,data);
+					break;
 
 				} else {
 
@@ -171,6 +184,50 @@ public class Server implements Runnable {
 
 			e.printStackTrace();
 		}
+	}
+
+	public void reinicio(int bytesLidos, long arqRecebido, JProgressBar progressBar, JTextPane rttRec,
+			JTextField tempoEstimado,FileOutputStream fileOutput,DataInputStream data1) throws IOException {
+
+		byte[] buffer1 = new byte[5000];// tam do pacote
+
+		int bytesLidos1 = 0;// bytes lidos
+		long tamArq = 0;// recebe tam do arquivo
+		long arqRecebido1 = 0;// variavel para calcular a porcentagem na progressbar
+		long tempoInicial = 0;
+		long atualizaTempo = 0;
+		long duracao = 0;
+		double vel = 0;
+		double tempoRestante = 0;
+		while ((bytesLidos1 = data1.read(buffer1)) > 0) {// Recebendo o arquivo
+
+			fileOutput.write(buffer1, 0, bytesLidos1);
+			fileOutput.flush();
+
+			System.out.println(bytesLidos1);
+			arqRecebido1 += bytesLidos1;
+			// Atualizando ProgessBar
+			progressBar.setValue((int) ((arqRecebido1 * 100) / tamArq));
+			progressBar.setString(Long.toString((arqRecebido1 * 100) / tamArq) + " %");
+			progressBar.setStringPainted(true);
+
+			if (arqRecebido1 > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
+
+				duracao = System.currentTimeMillis() - tempoInicial;
+				long div = arqRecebido1 / duracao;
+				vel = div * 1000;
+				tempoRestante = (tamArq - arqRecebido1) / vel;
+				DecimalFormat dec = new DecimalFormat("#");
+				String auxDec = "" + dec.format(tempoRestante);
+				tempoEstimado.setText(auxDec);
+				atualizaTempo = System.currentTimeMillis();
+			}
+
+			if (arqRecebido1 == 100) {
+				break;
+			}
+		}
+
 	}
 
 	public byte[] pegarCorpo(byte[] a) {

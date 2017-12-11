@@ -70,6 +70,10 @@ public class MsgRec implements Runnable {
 					else if(buffer.readLine().equals("CAN")) {
 						setFlag("cancelar");
 					}
+					else if(buffer.readLine().equals("REI")) {
+						setFlag("reiniciar");
+					}
+					
 				}
 							
 
