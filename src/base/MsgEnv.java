@@ -30,7 +30,7 @@ public class MsgEnv implements Runnable {
 		OutputStream outputStream = null;
 		InputStream inputStream = null;
 		Socket socket = null;
-		flag = "RTT\n";
+		flag = "ENV\n";
 
 		try {
 			socket = new Socket(ip, 3270);
@@ -42,10 +42,10 @@ public class MsgEnv implements Runnable {
 			BufferedReader buffer = new BufferedReader(input);
 			int cont=0;
 			
-			System.out.println("Conectando-se para enviar arquivo...");
+			
 			while (true) {
 
-				flag = "RTT\n";
+				flag = "ENV\n";
 				
 			
 				outputStream.write(flag.getBytes());
@@ -53,12 +53,12 @@ public class MsgEnv implements Runnable {
 				
 				while (!buffer.ready() && auxThread == 0);
 				if (buffer.ready()) {
-					if (buffer.readLine().equals("RTT")) {
+					if (buffer.readLine().equals("ENV")) {
 						cont++;
 					}
 				}
 
-				flag = "RTT2\n";
+				flag = "REC\n";
 			
 				if (auxThread == 1) {
 					break;
@@ -71,7 +71,8 @@ public class MsgEnv implements Runnable {
 				}
 				outputStream.write(flag.getBytes());
 				outputStream.flush();
-				System.out.println("Enviando "+cont);
+				System.out.println("Status "+flag);
+				System.out.println("Enviando arquivo..."+cont);
 				if (auxThread == 1) {
 					break;
 				}

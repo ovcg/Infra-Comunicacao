@@ -34,7 +34,6 @@ public class Main extends JFrame {
 	private JLabel lblTamanhoDoArquivo;
 	private JLabel lblIp;
 	private JButton buttonParar;
-	private JButton buttonReiniciar;
 	private JButton buttonCancelar;
 	private JTextPane rttEnv;
 	private JTextPane rttRec;
@@ -195,8 +194,8 @@ public class Main extends JFrame {
 		JButton btnNewButton = new JButton("Escolher Arquivo");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				
 				JFileChooser fc = new JFileChooser();
-
 				int abrir = fc.showOpenDialog(null);
 
 				if (abrir == JFileChooser.APPROVE_OPTION) {
@@ -228,17 +227,17 @@ public class Main extends JFrame {
 		btnIniciar.setBounds(48, 357, 117, 25);
 		contentPane.add(btnIniciar);
 
-		buttonParar = new JButton("Parar");// botão para parar
+		buttonParar = new JButton("Pausar");// botão para parar
 		buttonParar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 
 				if (parado) {
-					buttonParar.setText("Parar");
-					cliente.resume();
+					buttonParar.setText("Pausar");
+					cliente.reiniciar();
 					parado = false;
 					
 				} else {
-					buttonParar.setText("Resume");
+					buttonParar.setText("Reiniciar");
 					parado = true;
 					cliente.pausar();
 										
@@ -248,16 +247,6 @@ public class Main extends JFrame {
 		buttonParar.setBounds(202, 357, 117, 25);
 		contentPane.add(buttonParar);
 
-		buttonReiniciar = new JButton("Reiniciar");// botão para recomecar transferencia
-		buttonReiniciar.setBounds(497, 357, 117, 25);
-		contentPane.add(buttonReiniciar);
-
-		buttonReiniciar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				cliente.reiniciar();
-
-			}
-		});
 
 		buttonCancelar = new JButton("Cancelar");// botão para cancelar
 		buttonCancelar.addActionListener(new ActionListener() {

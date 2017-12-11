@@ -77,14 +77,13 @@ public class Server implements Runnable {
 			Thread tMsg = new Thread(msgrec);
 			tMsg.start();
 			msgrec.setAux(0);
-			msgrec.setFlag("RTT\n");
+			msgrec.setFlag("ENV\n");
 
 			// Nome do arquivo
 			byte[] nomeArq = new byte[150];
+
 			input.read(nomeArq);
-
 			String nome = new String(pegarCorpo(nomeArq), StandardCharsets.UTF_16);
-
 			nome = formataString(nome);
 			System.out.println("Recebendo arquivo: " + nome);
 			nomeArqGui.setText("Nome do arquivo: " + nome);
@@ -133,15 +132,15 @@ public class Server implements Runnable {
 
 				} else if (msgrec.getFlag().equalsIgnoreCase("reiniciar")) {
 
-					tempoEstimado.setText("" + 0);
-					rtt.setRTT("0");
-					progressBar.setValue(0);
-					progressBar.setString("0 %");
-					progressBar.setStringPainted(true);
-					File arquivo2 = new File("Recebidos" + File.separator + "1" + nome);
-					reinicio(bytesLidos, progressBar, rttRec, tempoEstimado, arquivo2, input,socket);
-					break;
-
+					if (!arquivo.exists()) {
+						bytesLidos = 0;
+						tempoEstimado.setText("" + 0);
+						rtt.setRTT("0");
+						progressBar.setValue(0);
+						progressBar.setString("0 %");
+						progressBar.setStringPainted(true);
+						break;
+					}
 				} else {
 
 					fileOutput.write(buffer, 0, bytesLidos);
@@ -184,58 +183,6 @@ public class Server implements Runnable {
 
 			e.printStackTrace();
 		}
-	}
-
-	public void reinicio(long tamArq, JProgressBar progressBar, JTextPane rttRec,
-			JTextField tempoEstimado,File file,InputStream inputstream,Socket socket){
-		inputstream=null;
-		
-		try {
-		byte[] buffer1 = new byte[5000];// tam do pacote
-		int bytesLidos = 0;
-		long arqRecebido=0;
-		long tempoInicial = 0;
-		long atualizaTempo = 0;
-		long duracao = 0;
-		double vel = 0;
-		double tempoRestante = 0;
-		inputstream=socket.getInputStream();
-		DataInputStream data1=new DataInputStream(inputstream);	
-		FileOutputStream fileOutput=new FileOutputStream(file);
-		
-		
-		while ((bytesLidos = data1.read(buffer1)) > 0) {// Recebendo o arquivo
-
-			fileOutput.write(buffer1, 0, bytesLidos);
-			fileOutput.flush();
-
-			arqRecebido += bytesLidos;
-			// Atualizando ProgessBar
-			progressBar.setValue((int) ((arqRecebido * 100) / tamArq));
-			progressBar.setString(Long.toString((arqRecebido * 100) / tamArq) + " %");
-			progressBar.setStringPainted(true);
-
-			if (arqRecebido > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
-
-				duracao = System.currentTimeMillis() - tempoInicial;
-				long div = arqRecebido / duracao;
-				vel = div * 1000;
-				tempoRestante = (tamArq - arqRecebido) / vel;
-				DecimalFormat dec = new DecimalFormat("#");
-				String auxDec = "" + dec.format(tempoRestante);
-				tempoEstimado.setText(auxDec);
-				atualizaTempo = System.currentTimeMillis();
-			}
-
-			if (arqRecebido == 100) {
-				break;
-			}
-		}
-		fileOutput.close();
-		}catch(IOException e) {
-			e.getStackTrace();
-		}
-		
 	}
 
 	public byte[] pegarCorpo(byte[] a) {

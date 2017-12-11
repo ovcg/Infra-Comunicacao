@@ -44,7 +44,7 @@ public class MsgRec implements Runnable {
 
 			InputStreamReader input = new InputStreamReader(inputStream);
 			BufferedReader buffer = new BufferedReader(input);
-			setFlag("RTT\n");
+			setFlag("ENV\n");
 			int cont = 0;
 
 			while (true) {
@@ -65,7 +65,7 @@ public class MsgRec implements Runnable {
 				while (!buffer.ready() && auxThread == 0)
 					;
 				if (buffer.ready()) {
-					if (buffer.readLine().equals("RTT2")) {
+					if (buffer.readLine().equals("REC")) {
 						cont++;
 
 					} else if (buffer.readLine().equals("CAN")) {

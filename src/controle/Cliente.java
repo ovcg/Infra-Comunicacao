@@ -81,7 +81,7 @@ public class Cliente implements Runnable {
 			Thread tmsg = new Thread(msgenv);
 			tmsg.start();
 			msgenv.setAux(0);
-			msgenv.setFlag("RTT\n");
+			msgenv.setFlag("ENV\n");
 
 			if (enviar == 1) {
 
@@ -91,8 +91,8 @@ public class Cliente implements Runnable {
 
 				byte[] cabecalho = new byte[3];
 				cabecalho[0] = 0;
-				cabecalho[1] = 1;
-				cabecalho[2] = 1;
+				cabecalho[1] = 0;
+				cabecalho[2] = 0;
 				byte[] corpo = nomeArq.getBytes("UTF_16");
 				byte[] pacoteNome;
 				pacoteNome = copiarArray(cabecalho, corpo);
@@ -100,8 +100,7 @@ public class Cliente implements Runnable {
 				System.out.println("Cliente enviando nome do arquivo:" + nomeArq);
 				outputStream.write(pacoteNome); // Enviando nome do arquivo
 				inputStream.read();
-
-				cabecalho[0] = 1;
+				cabecalho[0] = 0;
 				cabecalho[1] = 0;
 				cabecalho[2] = 0;
 
@@ -117,9 +116,9 @@ public class Cliente implements Runnable {
 				System.out.println("Cliente enviando tamanho do arquivo: " + tamArq / mega + " MB");
 
 				// Envia tamanho do arquivo
-				cabecalho[0] = 1;
+				cabecalho[0] = 0;
 				cabecalho[1] = 0;
-				cabecalho[2] = 1;
+				cabecalho[2] = 0;
 
 				String a = "" + tamArq;
 				byte pacoteTamArq[];
@@ -144,9 +143,9 @@ public class Cliente implements Runnable {
 							out.flush();
 							arqEnviado += bytes;
 							tempoEstimado.setText("" + 0);
-							enviar = 0;
-							
+							enviar = 0;							
 							pauseLock.wait();
+							
 						} else if (cancelar) {
 							msgenv.setAux(2);
 							tempoEstimado.setText("" + 0);
@@ -154,15 +153,9 @@ public class Cliente implements Runnable {
 							rtt.setAux(1);
 							rtt.setRTT("0");
 
-						} else if (reiniciar) {
-							msgenv.setAux(3);
-							msgenv.setFlag("cancelar");
-							tempoEstimado.setText("" + 0);
-							enviar = 0;
-							rtt.setAux(1);
-							rtt.setRTT("0");
-							reinicio(tamArq, progressbar, rttEnv, tempoEstimado, file,outputStream,socket);
-							break;
+						} else if (reiniciar) {							
+							
+							
 
 						} else if (arqEnviado == 100) {
 							System.out.println("Transfer finalizada!");
@@ -212,49 +205,6 @@ public class Cliente implements Runnable {
 
 	}
 
-	public void reinicio(long tamArq,JProgressBar progressBar, JTextPane rttRec,
-			JTextField tempoEstimado,File file,OutputStream outputstream,Socket socket)  {
-		outputstream=null;
-		try {
-		outputstream=socket.getOutputStream();	
-		FileInputStream fileInput=new FileInputStream(file);
-		DataOutputStream out=new DataOutputStream(outputstream);
-		byte[] buffer1 = new byte[5000];
-		long arqEnviado = 0;
-		int bytesLidos1 = 0;
-		long tempoInicial = 0;
-		long atualizaTempo = 0;
-		long duracao = 0;
-		double vel = 0;
-		double tempoRestante = 0;
-
-		while ((bytesLidos1 = fileInput.read(buffer1)) > 0) {// Enviando arquivo
-
-			out.write(buffer1, 0, bytesLidos1);
-			out.flush();
-			arqEnviado += bytesLidos1;
-
-			// Atualizando ProgessBar
-			progressbar.setValue((int) ((arqEnviado * 100) / tamArq));
-			progressbar.setString(Long.toString(((arqEnviado * 100) / tamArq)) + " %");
-			progressbar.setStringPainted(true);
-
-			if (arqEnviado > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
-				duracao = System.currentTimeMillis() - tempoInicial;
-				vel = 1000 * (arqEnviado / duracao);
-				tempoRestante = (tamArq - arqEnviado) / vel;
-				tempoEstimado.setText(String.valueOf(new DecimalFormat("#").format(tempoRestante)));
-				atualizaTempo = System.currentTimeMillis();
-			}
-			
-		}
-		fileInput.close();
-		}catch(IOException e) {
-			e.getStackTrace();
-		}
-
-	}
-
 	public byte[] copiarArray(byte[] a, byte[] b) {
 		byte[] c = new byte[b.length + 3];
 		System.arraycopy(a, 0, c, 0, 3);
@@ -270,7 +220,7 @@ public class Cliente implements Runnable {
 		this.enviar = enviar;
 	}
 
-	public void resume() {
+	public void reiniciar() {
 		synchronized (pauseLock) {
 			pausar = false;
 			pauseLock.notifyAll();
@@ -284,11 +234,6 @@ public class Cliente implements Runnable {
 	public void cancelar() {
 
 		cancelar = true;
-	}
-
-	public void reiniciar() {
-
-		this.reiniciar = true;
 	}
 
 }
