@@ -81,6 +81,7 @@ public class Cliente implements Runnable {
 			Thread tmsg = new Thread(msgenv);
 			tmsg.start();
 			msgenv.setAux(0);
+			msgenv.setFlag("RTT\n");
 
 			if (enviar == 1) {
 
@@ -144,8 +145,7 @@ public class Cliente implements Runnable {
 							arqEnviado += bytes;
 							tempoEstimado.setText("" + 0);
 							enviar = 0;
-							rtt.setAux(1);
-							rtt.setRTT("Pause");
+							
 							pauseLock.wait();
 						} else if (cancelar) {
 							msgenv.setAux(2);
@@ -156,11 +156,12 @@ public class Cliente implements Runnable {
 
 						} else if (reiniciar) {
 							msgenv.setAux(3);
+							msgenv.setFlag("cancelar");
 							tempoEstimado.setText("" + 0);
 							enviar = 0;
 							rtt.setAux(1);
 							rtt.setRTT("0");
-							reinicio(tamArq, progressbar, rttEnv, tempoEstimado, file,outputStream);
+							reinicio(tamArq, progressbar, rttEnv, tempoEstimado, file,outputStream,socket);
 							break;
 
 						} else if (arqEnviado == 100) {
@@ -184,6 +185,7 @@ public class Cliente implements Runnable {
 								tempoEstimado.setText(String.valueOf(new DecimalFormat("#").format(tempoRestante)));
 								atualizaTempo = System.currentTimeMillis();
 							}
+							rtt.setAux(0);
 						}
 
 					}
@@ -211,9 +213,10 @@ public class Cliente implements Runnable {
 	}
 
 	public void reinicio(long tamArq,JProgressBar progressBar, JTextPane rttRec,
-			JTextField tempoEstimado,File file,OutputStream outputstream) throws IOException {
-		
-		@SuppressWarnings("resource")
+			JTextField tempoEstimado,File file,OutputStream outputstream,Socket socket)  {
+		outputstream=null;
+		try {
+		outputstream=socket.getOutputStream();	
 		FileInputStream fileInput=new FileInputStream(file);
 		DataOutputStream out=new DataOutputStream(outputstream);
 		byte[] buffer1 = new byte[5000];
@@ -243,6 +246,11 @@ public class Cliente implements Runnable {
 				tempoEstimado.setText(String.valueOf(new DecimalFormat("#").format(tempoRestante)));
 				atualizaTempo = System.currentTimeMillis();
 			}
+			
+		}
+		fileInput.close();
+		}catch(IOException e) {
+			e.getStackTrace();
 		}
 
 	}

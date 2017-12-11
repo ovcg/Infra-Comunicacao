@@ -14,19 +14,20 @@ public class MsgRec implements Runnable {
 	private String flag;
 
 	public MsgRec() {
-		
+
 	}
 
 	public void setAux(int auxThread) {
 		this.auxThread = auxThread;
 	}
+
 	public String getFlag() {
 		return this.flag;
 	}
-	public void setFlag(String flag) {
-		this.flag=flag;
-	}
 
+	public void setFlag(String flag) {
+		this.flag = flag;
+	}
 
 	public void run() {
 		OutputStream outputStream = null;
@@ -43,16 +44,16 @@ public class MsgRec implements Runnable {
 
 			InputStreamReader input = new InputStreamReader(inputStream);
 			BufferedReader buffer = new BufferedReader(input);
-			long tempoRTT = 0;
 			flag = "RTT\n";
-			long tempoInicial;
+			int cont = 0;
 
 			while (true) {
 
-				while (!buffer.ready() && auxThread == 0);
+				while (!buffer.ready() && auxThread == 0)
+					;
 				if (buffer.ready())
 					buffer.readLine();
-				tempoInicial = System.nanoTime();
+				cont++;
 
 				if (auxThread == 1) {
 					break;
@@ -61,22 +62,20 @@ public class MsgRec implements Runnable {
 				outputStream.write(flag.getBytes());
 				outputStream.flush();
 
-				while (!buffer.ready() && auxThread == 0);
+				while (!buffer.ready() && auxThread == 0)
+					;
 				if (buffer.ready()) {
 					if (buffer.readLine().equals("RTT2")) {
-						tempoRTT = System.nanoTime() - tempoInicial;
+						cont++;
 
-					}
-					else if(buffer.readLine().equals("CAN")) {
+					} else if (buffer.readLine().equals("CAN")) {
 						setFlag("cancelar");
-					}
-					else if(buffer.readLine().equals("REI")) {
+					} else if (buffer.readLine().equals("REI")) {
 						setFlag("reiniciar");
 					}
-					
-				}
-							
 
+				}
+				System.out.println("Recebendo arquivo "+cont);
 				if (auxThread == 1) {
 					break;
 				}

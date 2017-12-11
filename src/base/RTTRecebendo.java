@@ -67,10 +67,6 @@ public class RTTRecebendo implements Runnable {
 						tempoRTT = System.nanoTime() - tempoInicial;
 
 					}
-					else if(buffer.readLine().equals("pause")) {
-						while(auxThread==2)
-						showRTT.setText("Pause");
-					}
 				}
 				double rttms = tempoRTT / 1000000;
 

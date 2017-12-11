@@ -85,7 +85,7 @@ public class Main extends JFrame {
 		textFieldIp.setColumns(10);
 		textFieldIp.setBounds(88, 15, 117, 19);
 		contentPane.add(textFieldIp);
-		textFieldIp.setText("192.168.0.119");
+		textFieldIp.setText("172.20.4.32");
 
 		progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);

@@ -132,15 +132,13 @@ public class Server implements Runnable {
 
 				} else if (msgrec.getFlag().equalsIgnoreCase("reiniciar")) {
 
-					
 					tempoEstimado.setText("" + 0);
-					rtt.setAux(1);
 					rtt.setRTT("0");
 					progressBar.setValue(0);
 					progressBar.setString("0 %");
 					progressBar.setStringPainted(true);
-					File arquivo2 = new File("Recebidos" + File.separator +"1"+ nome);
-					reinicio(bytesLidos, progressBar, rttRec, tempoEstimado,arquivo2,input);
+					File arquivo2 = new File("Recebidos" + File.separator + "1" + nome);
+					reinicio(bytesLidos, progressBar, rttRec, tempoEstimado, arquivo2, input,socket);
 					break;
 
 				} else {
@@ -188,8 +186,10 @@ public class Server implements Runnable {
 	}
 
 	public void reinicio(long tamArq, JProgressBar progressBar, JTextPane rttRec,
-			JTextField tempoEstimado,File file,InputStream inputstream) throws IOException {
-
+			JTextField tempoEstimado,File file,InputStream inputstream,Socket socket){
+		inputstream=null;
+		
+		try {
 		byte[] buffer1 = new byte[5000];// tam do pacote
 		int bytesLidos = 0;
 		long arqRecebido=0;
@@ -198,8 +198,8 @@ public class Server implements Runnable {
 		long duracao = 0;
 		double vel = 0;
 		double tempoRestante = 0;
-		DataInputStream data1=new DataInputStream(inputstream);
-		@SuppressWarnings("resource")
+		inputstream=socket.getInputStream();
+		DataInputStream data1=new DataInputStream(inputstream);	
 		FileOutputStream fileOutput=new FileOutputStream(file);
 		
 		
@@ -230,7 +230,11 @@ public class Server implements Runnable {
 				break;
 			}
 		}
-
+		fileOutput.close();
+		}catch(IOException e) {
+			e.getStackTrace();
+		}
+		
 	}
 
 	public byte[] pegarCorpo(byte[] a) {

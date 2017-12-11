@@ -7,8 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import javax.swing.JTextPane;
-
 public class MsgEnv implements Runnable {
 
 	private String ip;
@@ -32,6 +30,8 @@ public class MsgEnv implements Runnable {
 		OutputStream outputStream = null;
 		InputStream inputStream = null;
 		Socket socket = null;
+		flag = "RTT\n";
+
 		try {
 			socket = new Socket(ip, 3270);
 
@@ -40,15 +40,13 @@ public class MsgEnv implements Runnable {
 
 			InputStreamReader input = new InputStreamReader(inputStream);
 			BufferedReader buffer = new BufferedReader(input);
-			long tempoRTT = 0;
-			flag = "RTT\n";
-			long tempoInicial;
-
+			int cont=0;
+			
 			System.out.println("Conectando-se para enviar arquivo...");
 			while (true) {
 
 				flag = "RTT\n";
-				tempoInicial = System.nanoTime();
+				
 			
 				outputStream.write(flag.getBytes());
 				outputStream.flush();
@@ -56,7 +54,7 @@ public class MsgEnv implements Runnable {
 				while (!buffer.ready() && auxThread == 0);
 				if (buffer.ready()) {
 					if (buffer.readLine().equals("RTT")) {
-						tempoRTT = System.nanoTime() - tempoInicial;
+						cont++;
 					}
 				}
 
@@ -73,7 +71,7 @@ public class MsgEnv implements Runnable {
 				}
 				outputStream.write(flag.getBytes());
 				outputStream.flush();
-
+				System.out.println("Enviando "+cont);
 				if (auxThread == 1) {
 					break;
 				}

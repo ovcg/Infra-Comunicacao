@@ -49,11 +49,12 @@ public class RTTEnviando implements Runnable {
 
 				flag = "RTT\n";
 				tempoInicial = System.nanoTime();
-			
+
 				outputStream.write(flag.getBytes());
 				outputStream.flush();
-				
-				while (!buffer.ready() && auxThread == 0);
+
+				while (!buffer.ready() && auxThread == 0)
+					;
 				if (buffer.ready()) {
 					if (buffer.readLine().equals("RTT")) {
 
@@ -62,15 +63,9 @@ public class RTTEnviando implements Runnable {
 				}
 
 				flag = "RTT2\n";
-			
+
 				if (auxThread == 1) {
 					break;
-				}
-				if(auxThread==2) {
-					flag="pause\n";
-					outputStream.write(flag.getBytes());
-					outputStream.flush();
-					while(auxThread==2)showRTT.setText("Pause");
 				}
 				outputStream.write(flag.getBytes());
 				outputStream.flush();
