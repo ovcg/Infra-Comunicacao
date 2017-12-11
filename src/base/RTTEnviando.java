@@ -41,7 +41,7 @@ public class RTTEnviando implements Runnable {
 			InputStreamReader input = new InputStreamReader(inputStream);
 			BufferedReader buffer = new BufferedReader(input);
 			long tempoRTT = 0;
-			String flag = "rtt\n";
+			String flag = "RTT\n";
 			long tempoInicial;
 
 			System.out.println("Conectando-se para obter RTT...");

@@ -85,7 +85,7 @@ public class Main extends JFrame {
 		textFieldIp.setColumns(10);
 		textFieldIp.setBounds(88, 15, 117, 19);
 		contentPane.add(textFieldIp);
-		textFieldIp.setText("192.168.0.112");
+		textFieldIp.setText("192.168.0.122");
 
 		progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
@@ -260,10 +260,11 @@ public class Main extends JFrame {
 
 			public void actionPerformed(ActionEvent arg0) {
 				if (enviar == 1) {
-					// cliente.cancelarEnvio(1);
-					cliente.iniciar(0);
-					enviar = 0;
+					server.cancelar();
 					JOptionPane.showMessageDialog(null, "Transfer cancelada!");
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "Nada para ser cancelado!");
 				}
 			}
 		});
