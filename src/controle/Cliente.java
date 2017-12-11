@@ -160,7 +160,7 @@ public class Cliente implements Runnable {
 							enviar = 0;
 							rtt.setAux(1);
 							rtt.setRTT("0");
-							reinicio(bytesLidos, arqEnviado, progressbar, rttEnv, tempoEstimado, fileInput, out);
+							reinicio(tamArq, progressbar, rttEnv, tempoEstimado, fileInput, out);
 
 						} else if (arqEnviado == 100) {
 							System.out.println("Transfer finalizada!");
@@ -209,13 +209,12 @@ public class Cliente implements Runnable {
 
 	}
 
-	public void reinicio(int bytesLidos, long arqEnviado, JProgressBar progressBar, JTextPane rttRec,
+	public void reinicio(long tamArq,JProgressBar progressBar, JTextPane rttRec,
 			JTextField tempoEstimado, FileInputStream fileInput, DataOutputStream out) throws IOException {
 
 		byte[] buffer1 = new byte[5000];
+		long arqEnviado = 0;
 		int bytesLidos1 = 0;
-		long tamArq = 0;
-		long arqEnviado1 = 0;
 		long tempoInicial = 0;
 		long atualizaTempo = 0;
 		long duracao = 0;
@@ -226,17 +225,17 @@ public class Cliente implements Runnable {
 
 			out.write(buffer1, 0, bytesLidos1);
 			out.flush();
-			arqEnviado1 += bytesLidos1;
+			arqEnviado += bytesLidos1;
 
 			// Atualizando ProgessBar
-			progressbar.setValue((int) ((arqEnviado1 * 100) / tamArq));
-			progressbar.setString(Long.toString(((arqEnviado1 * 100) / tamArq)) + " %");
+			progressbar.setValue((int) ((arqEnviado * 100) / tamArq));
+			progressbar.setString(Long.toString(((arqEnviado * 100) / tamArq)) + " %");
 			progressbar.setStringPainted(true);
 
-			if (arqEnviado1 > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
+			if (arqEnviado > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
 				duracao = System.currentTimeMillis() - tempoInicial;
-				vel = 1000 * (arqEnviado1 / duracao);
-				tempoRestante = (tamArq - arqEnviado1) / vel;
+				vel = 1000 * (arqEnviado / duracao);
+				tempoRestante = (tamArq - arqEnviado) / vel;
 				tempoEstimado.setText(String.valueOf(new DecimalFormat("#").format(tempoRestante)));
 				atualizaTempo = System.currentTimeMillis();
 			}

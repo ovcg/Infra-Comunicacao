@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
@@ -131,6 +132,7 @@ public class Server implements Runnable {
 
 				} else if (msgrec.getFlag().equalsIgnoreCase("reiniciar")) {
 
+					Files.deleteIfExists(arquivo.toPath());
 					tempoEstimado.setText("" + 0);
 					rtt.setAux(1);
 					rtt.setRTT("0");
@@ -138,7 +140,7 @@ public class Server implements Runnable {
 					progressBar.setString("0 %");
 					progressBar.setStringPainted(true);
 					
-					reinicio(bytesLidos, arqRecebido, progressBar, rttRec, tempoEstimado,fileOutput,data);
+					reinicio(bytesLidos, progressBar, rttRec, tempoEstimado,fileOutput,data);
 					break;
 
 				} else {
@@ -186,44 +188,42 @@ public class Server implements Runnable {
 		}
 	}
 
-	public void reinicio(int bytesLidos, long arqRecebido, JProgressBar progressBar, JTextPane rttRec,
+	public void reinicio(long tamArq, JProgressBar progressBar, JTextPane rttRec,
 			JTextField tempoEstimado,FileOutputStream fileOutput,DataInputStream data1) throws IOException {
 
 		byte[] buffer1 = new byte[5000];// tam do pacote
-
-		int bytesLidos1 = 0;// bytes lidos
-		long tamArq = 0;// recebe tam do arquivo
-		long arqRecebido1 = 0;// variavel para calcular a porcentagem na progressbar
+		int bytesLidos = 0;
+		long arqRecebido=0;
 		long tempoInicial = 0;
 		long atualizaTempo = 0;
 		long duracao = 0;
 		double vel = 0;
 		double tempoRestante = 0;
-		while ((bytesLidos1 = data1.read(buffer1)) > 0) {// Recebendo o arquivo
+		while ((bytesLidos = data1.read(buffer1)) > 0) {// Recebendo o arquivo
 
-			fileOutput.write(buffer1, 0, bytesLidos1);
+			fileOutput.write(buffer1, 0, bytesLidos);
 			fileOutput.flush();
 
-			System.out.println(bytesLidos1);
-			arqRecebido1 += bytesLidos1;
+			System.out.println(bytesLidos);
+			arqRecebido += bytesLidos;
 			// Atualizando ProgessBar
-			progressBar.setValue((int) ((arqRecebido1 * 100) / tamArq));
-			progressBar.setString(Long.toString((arqRecebido1 * 100) / tamArq) + " %");
+			progressBar.setValue((int) ((arqRecebido * 100) / tamArq));
+			progressBar.setString(Long.toString((arqRecebido * 100) / tamArq) + " %");
 			progressBar.setStringPainted(true);
 
-			if (arqRecebido1 > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
+			if (arqRecebido > 10000 && (System.currentTimeMillis() - atualizaTempo) > 1000) {
 
 				duracao = System.currentTimeMillis() - tempoInicial;
-				long div = arqRecebido1 / duracao;
+				long div = arqRecebido / duracao;
 				vel = div * 1000;
-				tempoRestante = (tamArq - arqRecebido1) / vel;
+				tempoRestante = (tamArq - arqRecebido) / vel;
 				DecimalFormat dec = new DecimalFormat("#");
 				String auxDec = "" + dec.format(tempoRestante);
 				tempoEstimado.setText(auxDec);
 				atualizaTempo = System.currentTimeMillis();
 			}
 
-			if (arqRecebido1 == 100) {
+			if (arqRecebido == 100) {
 				break;
 			}
 		}
